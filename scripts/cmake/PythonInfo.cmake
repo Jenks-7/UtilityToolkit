@@ -1,0 +1,13 @@
+## Locate python installation
+function(print_python_info)
+	if(Python3_FOUND)
+		message(STATUS "PYTHON3 Found:")
+		message(STATUS "  PYTHON3 Version: ${Python3_VERSION}")
+		message(STATUS "  PYTHON3 Executable: ${Python3_EXECUTABLE}")
+		message(STATUS "  PYTHON3 Include Dir: ${Python3_INCLUDE_DIRS}")
+		message(STATUS "  PYTHON3 Library Dir: ${Python3_LIBRARY_DIRS}")
+		message(STATUS "  PYTHON3 Libraries: ${Python3_LIBRARIES}")
+    else()
+        message(FATAL_ERROR "Python3 is required but not found. Please install it from https://www.python.org/downloads/")
+    endif()
+endfunction()
