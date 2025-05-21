@@ -1,4 +1,4 @@
-# Third-Party Dependencies Directory
+# Third-Party Dependencies
 
 ## Overview
 This directory contains **external tools and libraries** that are either:
