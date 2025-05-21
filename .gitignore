@@ -1,0 +1,37 @@
+# Keep these essential root files
+!README.md
+!CMakeLists.txt
+!*.cmake
+!CMakeSettings.json
+
+# Ignore common build artifacts only in the root directory
+/*.obj
+/*.o
+/*.exe
+/*.dll
+/*.so
+/*.dylib
+/*.a
+/*.lib
+
+# Ignore build directories only in the root
+/build/
+/Build/
+/bin/
+/Bin/
+/lib/
+/Lib/
+/out/
+/Out/
+/dist/
+
+# Ignore IDE/editor configs globally
+.vscode/
+.vs/
+*.user
+*.suo
+*.ncb
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
