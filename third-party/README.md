@@ -14,9 +14,9 @@ These dependencies are **not required to build Utility Toolkit by default**, but
 ## Structure
 | Subdirectory | Purpose                                                                              |
 |--------------|--------------------------------------------------------------------------------------|
-| `binaries`  | Pre-compiled third-party libraries and tools used optionally by the project          |
-| `source`    | Full or partial source trees of external libraries that may be rebuilt or referenced |
-| `docs`      | Setup and integration instructions for specific third-party packages                 |
+| `binaries`   | Pre-compiled third-party libraries and tools used optionally by the project          |
+| `source`     | Full or partial source trees of external libraries that may be rebuilt or referenced |
+| `docs`       | Setup and integration instructions for specific third-party packages                 |
 
 ---
 
