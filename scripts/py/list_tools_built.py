@@ -1,6 +1,16 @@
 from pathlib import Path
 from typing import List, Tuple, Optional
 
+def get_built_modules_only() -> List[str]:
+    lib_dir = Path(__file__).resolve().parents[2] / "lib"
+    output_dirs = ("Debug", "Release")
+
+    for subdir in output_dirs:
+        full_path = lib_dir / subdir
+        if full_path.exists():
+            return [file.name.removesuffix(".lib") for file in full_path.iterdir() if file.is_file() and file.suffix == ".lib"]
+    return []
+
 def get_built_modules() -> Tuple[List[str], Optional[str]]:
     lib_dir = Path(__file__).resolve().parents[2] / "lib"
     output_dirs = ("Debug", "Release")
