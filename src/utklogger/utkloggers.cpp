@@ -114,6 +114,8 @@ public:
 	}
 
 	void printLog() const {
+		
+		prefix.append("Hello");
 
 		cout << setw(spacing)
 			<< left
