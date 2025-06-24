@@ -28,6 +28,7 @@ A modular suite of C++ developer tools leveraging the STL and Boost for lightwei
 - Script engine integration
 - Enhanced test utilities (auto-generators, stubs)
 - Settings/configuration interface
+- C Interop layer for top layer of API. To enable core tooling usage in C 
 
 ## Getting Started
 Utility Toolkit uses a CMake-based build system and will be built automatically via CI/CD pipelines.
