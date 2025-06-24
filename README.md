@@ -6,14 +6,21 @@ A modular suite of C++ developer tools leveraging the STL and Boost for lightwei
 ## Development Status
 🚧 This project is under active development. Expect breaking changes and incomplete modules until v1.0.0 is tagged.
 
- - Create documentation and UML documentation
+## To-do
+- Create usage documentation and UML documentation of individual tools
+- Interoperability layer for surface level tools and lib features
+- UTK::Logger(Remaining logger types)
+- UTK::ScriptEngine
+- UTK::Client(Simple web client for fetching data)
+- UTK::Peripheral(For hardware comms)
+- UTK::OPCUA(For IoT, or similar data historization and gathering tools)
 
 ## Features
 - Modular tool-based architecture
 - Logger utility (initial module)
 - JSON configuration and scripting support (planned)
-- Build and automation scripts via Python
-- Integration-ready with CMake-based systems
+- Build and run scripts within C/C++ envs
+- Integration-ready with CMake based systems
 - Interoperability layer for C
 
 ## Project Structure
