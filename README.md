@@ -12,6 +12,7 @@ A modular suite of C++ developer tools leveraging the STL and Boost for lightwei
 - JSON configuration and scripting support (planned)
 - Build and automation scripts via Python
 - Integration-ready with CMake-based systems
+- Interoperability layer for C
 
 ## Project Structure
 | Location    | Description                                                                 |
