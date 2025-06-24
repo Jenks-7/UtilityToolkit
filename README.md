@@ -6,6 +6,8 @@ A modular suite of C++ developer tools leveraging the STL and Boost for lightwei
 ## Development Status
 🚧 This project is under active development. Expect breaking changes and incomplete modules until v1.0.0 is tagged.
 
+ - Create documentation and UML documentation
+
 ## Features
 - Modular tool-based architecture
 - Logger utility (initial module)
