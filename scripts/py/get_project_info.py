@@ -1,3 +1,15 @@
+# ==================================================================================================
+# @file        get_project_info.py
+# @brief       Gathers and summarizes metadata about the UTK project configuration and structure.
+# author       Jac Jenkins
+# @date        25/05/2025
+#
+# @description
+#   Retrieves project-level information such as project name, version, last build date, and
+#   active tools. This script supports dashboard displays and status reporting tools.
+# ==================================================================================================
+
+
 import sys, os, platform, subprocess
 from datetime import datetime
 from pathlib import Path

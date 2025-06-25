@@ -1,6 +1,13 @@
-"""
-
-"""
+# ==================================================================================================
+# @file        list_tools_built.py
+# @brief       Lists all currently built tools or modules in the UTK project.
+# @author      Jac Jenkins
+# @date        11/06/2025
+#
+# @description
+#   Scans the include/ and src/ directories to find defined UTK tools and generates a list
+#   for display or export. Supports integration with project dashboard or summaries.
+# ==================================================================================================
 
 from typing import List, Tuple, Optional
 from pathlib import Path

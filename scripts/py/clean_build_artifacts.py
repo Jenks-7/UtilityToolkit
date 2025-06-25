@@ -1,6 +1,15 @@
-"""
+# ==================================================================================================
+# @file        clean_build_artifacts.py
+# @brief       Removes generated build files and temporary artifacts from the project directory.
+# @author      Jac Jenkins
+# @date        11/06/2025
+#
+# @description
+#   Cleans up build artifacts (e.g. CMake cache, binary outputs, object files) to reset the
+#   working directory or prepare for a clean rebuild. Optionally supports dry-run and verbose
+#   output modes for safety and transparency.
+# ==================================================================================================
 
-"""
 
 from pathlib import Path
 import shutil
