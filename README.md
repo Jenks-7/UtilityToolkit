@@ -4,8 +4,7 @@
 
 ## Overview
 
-**Merlin** is a modular systems utility toolkit designed for embedded control, data automation, and infrastructure engineering.  
-Built on a foundation of modern C++ and leveraging the STL and Boost, it streamlines testing infrastructure, scripting workflows, and future diagnostic extensions.
+**Merlin** is a modular systems utility toolkit designed for embedded control, data automation, and infrastructure engineering. Built on a foundation of modern C++ and leveraging the STL and Boost, it streamlines testing infrastructure, scripting workflows, and future diagnostic extensions.
 
 At its core, **Merlin** is implemented as the `UtilityToolkit` — or **UTK** — a clean and efficient C++ library offering robust, low-level tools including logging, caching, scripting engines, and industrial protocol support.
 
