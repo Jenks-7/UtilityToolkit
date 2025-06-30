@@ -3,7 +3,6 @@
 ---
 
 ## Overview
-
 **Merlin** is a modular systems utility toolkit designed for embedded control, data automation, and infrastructure engineering. Built on a foundation of modern C++ and leveraging the STL and Boost, it streamlines testing infrastructure, scripting workflows, and future diagnostic extensions.
 
 At its core, **Merlin** is implemented as the `UtilityToolkit` — or **UTK** — a clean and efficient C++ library offering robust, low-level tools including logging, caching, scripting engines, and industrial protocol support.
@@ -12,16 +11,10 @@ At its core, **Merlin** is implemented as the `UtilityToolkit` — or **UTK** �
 
 Whether you know it by its functional name (`UTK`) or its identity (`Merlin`), this toolkit serves as your tome of utilities — a repository of engineering wisdom, precision abstractions, and system design fundamentals.
 
----
-
 ## Development Status
-
 🚧 This project is under active development. Expect breaking changes and incomplete modules until v1.0.0 is tagged.
 
----
-
 ## To-do
-
 - Create usage documentation and UML documentation of individual tools  
 - Interoperability layer for surface level tools and lib features  
 - `UTK::Logger` (Remaining logger types)  
@@ -29,12 +22,11 @@ Whether you know it by its functional name (`UTK`) or its identity (`Merlin`), t
 - `UTK::Peripheral` (For hardware comms)  
 - `UTK::OPCUA` (For IoT, or similar data historization and gathering tools)
 
----
-
 ## Considerations
-
 - `UTK::Client` (Simple web client for fetching data)  
 - `UTK::Caching` (LRUCache and other caching options or similar data structures for use in creating advanced tools)  
+
+---
 
 **Hashing/Code generation tools:**
 - `UTK::Barcode` (or QR-code generation)  
@@ -42,10 +34,7 @@ Whether you know it by its functional name (`UTK`) or its identity (`Merlin`), t
 - `UTK::UUID` (UUID/GUID generation for item tracking and tying in A-numbers etc.)  
 - `UTK::Random`
 
----
-
 ## Features
-
 - Modular tool-based architecture  
 - Logger utility (initial module)  
 - JSON configuration and scripting support (planned)  
@@ -53,10 +42,7 @@ Whether you know it by its functional name (`UTK`) or its identity (`Merlin`), t
 - Integration-ready with CMake based systems  
 - Interoperability layer for C  
 
----
-
 ## Project Structure
-
 | Location       | Description                                                              |
 |----------------|--------------------------------------------------------------------------|
 | `examples`     | Example usage of toolkit modules and build setups for reference          |
@@ -65,10 +51,8 @@ Whether you know it by its functional name (`UTK`) or its identity (`Merlin`), t
 | `src`          | Core implementation source files, organized by tool                      |
 | `tests`        | Contains GoogleTest-based test sources for validating toolkit modules    |
 | `third-party`  | External libraries and precompiled dependencies used by the toolkit      |
----
 
 ## Planned Modules
-
 - OPC-UA tooling  
 - Script engine integration  
 - Enhanced test utilities (auto-generators, stubs)  
@@ -78,7 +62,6 @@ Whether you know it by its functional name (`UTK`) or its identity (`Merlin`), t
 ---
 
 ## Getting Started
-
 Utility Toolkit uses a CMake-based build system and will be built automatically via CI/CD pipelines.
 
 ✅ Builds and tests are automatically run through CI on each commit.  
@@ -87,7 +70,6 @@ Utility Toolkit uses a CMake-based build system and will be built automatically 
 ---
 
 ### Local Build Instructions
-
 **Prerequisites**: CMake, Python 3.10+, Boost (minimal), a C++20-compatible compiler
 
 ```sh
