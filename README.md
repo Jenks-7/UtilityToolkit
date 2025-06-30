@@ -59,8 +59,6 @@ Whether you know it by its functional name (`UTK`) or its identity (`Merlin`), t
 - Settings/configuration interface  
 - C Interop layer for top layer of API. To enable core tooling usage in C  
 
----
-
 ## Getting Started
 Utility Toolkit uses a CMake-based build system and will be built automatically via CI/CD pipelines.
 
