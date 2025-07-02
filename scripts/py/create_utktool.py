@@ -3,14 +3,13 @@
 # @brief       Command-line tool for generating UTK header and source file structures.
 # @author      Jac Jenkins
 # @date        25/06/2025
-#
+# 
 # @description
 #   This script creates the basic structure for a new UTK tool, including its header and
 #   source files, under the appropriate directory tree. Optionally supports nesting under
 #   an existing tool as a subtool. File names, namespaces, and headers are automatically
 #   populated.
 # ==================================================================================================
-
 
 from typing import Optional
 from datetime import date

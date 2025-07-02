@@ -9,6 +9,7 @@
 
 #include "logger/utkloggers.hpp"
 #include <filesystem>
+#include <unordered_map>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -16,7 +17,6 @@
 #include <memory>
 #include <chrono>
 #include <ctime>
-#include <map>
 
 using namespace std;
 using namespace chrono;
@@ -24,7 +24,7 @@ using namespace UTK::Loggers;
 using namespace UTK::Types::States;
 using namespace UTK::Types::Metadata;
 
-using StringVector = std::vector<std::string>;
+using StringVector = vector<string>;
 
 //===================================================================================================================================
 //											    INTERFACE AND LOGGER IMPLEMENTATIONS
@@ -47,15 +47,16 @@ class terminalLogger : public ILogger {
 private:
 	string prefix;
 	string suffix;
-	const int spacing = 40;
+	const int spacing = 65;
 
-	map<Operations, string> opsToSuffix{
+	unordered_map<Operations, string> opsToSuffix{
 		{Operations::LG_RD,  "[READ] "},
 		{Operations::LG_WR,  "[WRITE] "},
 		{Operations::LG_IN,  "[LOGIN] "},
 		{Operations::LG_ERR, "[ERROR] "},
 		{Operations::LG_OUT, "[LOGOUT] "},
 		{Operations::LG_IDL, "[IDLE] "},
+		{Operations::LG_MSG, "[MESSAGE] "},
 		{Operations::LG_NOP, ""}
 	};
 
@@ -109,12 +110,13 @@ public:
 		string(infoString).swap(infoString);  // Optimize memory from prior reservation
 
 		/// MAIN LOGIC HERE
-		suffix = opsToSuffix.at(ops);
+		suffix = opsToSuffix.at(ops);	/* ADD IN POTENTIAL EXCEPTION HANDLING HERE */
 		suffix.append(infoString);
 	}
 
-	void printLog() const {
+	void printLog() const override {
 
+		// UPDATE TO WORK WITH FORMAT AND SPECIFIERS IF POSSIBLE TO MAINTAIN LAYOUT
 		cout << setw(spacing)
 			<< left
 			<< prefix

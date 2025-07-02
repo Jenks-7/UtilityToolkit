@@ -34,6 +34,7 @@ namespace UTK::Types::States {
 		LG_OUT,
 		LG_IDL,
 		LG_ERR,
+		LG_MSG,
 		LG_NOP
 	};
 }
