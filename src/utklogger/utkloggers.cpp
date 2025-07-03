@@ -11,7 +11,6 @@
 #include <filesystem>
 #include <unordered_map>
 #include <iostream>
-#include <iomanip>
 #include <sstream>
 #include <format>
 #include <memory>
@@ -25,16 +24,43 @@ using namespace UTK::Types::States;
 using namespace UTK::Types::Metadata;
 
 using StringVector = vector<string>;
+using OperationsMap = unordered_map<Operations, string>;
 
 //===================================================================================================================================
-//											    INTERFACE AND LOGGER IMPLEMENTATIONS
+//											    HELPER FUNCTIONS & UTILITIES
+//===================================================================================================================================
+static const string getOpsToSuffix(const Operations& opKey) {
+
+	/// Local map that only gets instantiated once between calls
+	static const OperationsMap opsToSuffix{
+		{ Operations::LG_RD,  "[READ]" },
+		{ Operations::LG_WR,  "[WRITE]" },
+		{ Operations::LG_IN,  "[LOGIN]" },
+		{ Operations::LG_ERR, "[ERROR]" },
+		{ Operations::LG_OUT, "[LOGOUT]" },
+		{ Operations::LG_IDL, "[IDLE]" },
+		{ Operations::LG_MSG, "[MESSAGE]" },
+		{ Operations::LG_NOP, "" }
+	};
+	
+	/// Check if operation is present in map
+	auto it = opsToSuffix.find(opKey);
+	if (it != opsToSuffix.end()) {
+		return it->second;
+	}
+	
+	return "[UNKNOWN]"s;
+}
+
+//===================================================================================================================================
+//													STANDARD LOGGER INTEFACE 
 //===================================================================================================================================
 
 class ILogger {
 
 public:
-	virtual void generatePrefix(string_view fileName, const int& fileLine, string_view funcName) = 0;
-	virtual void generateSuffix(Operations ops, const vector<string>& data, const vector<string>& format) = 0;
+	virtual void generatePrefix(string_view fileName, string_view fileLine, string_view funcName) = 0;
+	virtual void generateSuffix(const Operations& ops, const StringVector& data, const StringVector& format) = 0;
 	virtual void printLog() const = 0;
 	virtual ~ILogger() = default;
 
@@ -42,23 +68,15 @@ protected:
 	virtual string getTimeStamp() = 0;
 };
 
+//===================================================================================================================================
+//											    INTERFACE AND LOGGER IMPLEMENTATIONS
+//===================================================================================================================================
+
 class terminalLogger : public ILogger {
 
 private:
 	string prefix;
 	string suffix;
-	const int spacing = 65;
-
-	unordered_map<Operations, string> opsToSuffix{
-		{Operations::LG_RD,  "[READ] "},
-		{Operations::LG_WR,  "[WRITE] "},
-		{Operations::LG_IN,  "[LOGIN] "},
-		{Operations::LG_ERR, "[ERROR] "},
-		{Operations::LG_OUT, "[LOGOUT] "},
-		{Operations::LG_IDL, "[IDLE] "},
-		{Operations::LG_MSG, "[MESSAGE] "},
-		{Operations::LG_NOP, ""}
-	};
 
 protected:
 	string getTimeStamp() {
@@ -78,18 +96,20 @@ protected:
 	};
 
 public:
-	void generatePrefix(string_view fileName, const int& fileLine, string_view funcName) override {
+	void generatePrefix(string_view fileName, string_view fileLine, string_view funcName) override {
 
 		prefix = format("{} {}:{}:{}", getTimeStamp(), fileName, fileLine, funcName);
 	}
 
-	void generateSuffix(Operations ops, const StringVector& format, const StringVector& data) override {
+	void generateSuffix(const Operations& ops, const StringVector& format, const StringVector& data) override {
 
 		string infoString;
 		size_t max_size = max(format.size(), data.size());
 
+		/// Reserve memory to prevent constant reinitializations in lambda
 		infoString.reserve(300);
 
+		/// Lambda to format the info string 
 		auto append_fn = [&infoString](string_view f, string_view d) {
 			if (!f.empty()) {
 				infoString.append(f).append(" ");
@@ -99,6 +119,7 @@ public:
 			}
 			};
 
+		/// Combine format and data args together
 		for (size_t i = 0; i < max_size; i++) {
 			string_view _format = (i < format.size()) ? string_view(format[i]) : string_view{};
 			string_view _data = (i < data.size()) ? string_view(data[i]) : string_view{};
@@ -106,22 +127,24 @@ public:
 			append_fn(_format, _data);
 		}
 
-		infoString.pop_back();				  // Trims the final space character
-		string(infoString).swap(infoString);  // Optimize memory from prior reservation
+		/// Cleanup final character and optimize memory from prior reservation
+		infoString.pop_back();					
+		string(infoString).swap(infoString);	
 
-		/// MAIN LOGIC HERE
-		suffix = opsToSuffix.at(ops);	/* ADD IN POTENTIAL EXCEPTION HANDLING HERE */
-		suffix.append(infoString);
+		/// Generate the suffix
+		auto& operation = getOpsToSuffix(ops);
+		suffix.append(operation).append(" ").append(infoString);
 	}
 
 	void printLog() const override {
 
-		// UPDATE TO WORK WITH FORMAT AND SPECIFIERS IF POSSIBLE TO MAINTAIN LAYOUT
-		cout << setw(spacing)
-			<< left
-			<< prefix
-			<< suffix
-			<< endl;
+		if (prefix.empty()) {
+			cout << suffix << "\n";
+		}
+		else {
+			constexpr int fixedPrefixWidth = 70;
+			cout << format("{:<{}} {}", prefix, fixedPrefixWidth, suffix) << "\n";
+		}
 	}
 };
 
@@ -184,15 +207,15 @@ void loggerHandler::logOperation(Operations op, Logger lg, const FormatStrings& 
 
 	unique_ptr<ILogger> logger = lgFactory::getLogger(lg);
 
-	/// It's assumed you want the class method name, source file & line if initialized without members.
-	if (fileName.empty() || funcName.empty()) {
-
-		fileName = getFileName();
-		funcName = __func__;
-	}
+	/// If specified parameters are empty, set them as the following.
+	if (fileName.empty())    fileName = "<unknown file>";
+	if (funcName.empty())    funcName = "<unknown function>";
+	
+	/// Needed to allow for clearer output when invalid params are given
+    string lineStr = fileLine < 0 ? "<unknown_line>" : to_string(fileLine);
 
 	/// Generate log
-	logger->generatePrefix(fileName, fileLine, funcName);
+	logger->generatePrefix(fileName, lineStr, funcName);
 	logger->generateSuffix(op, format, metadata);
 	logger->printLog();
 }

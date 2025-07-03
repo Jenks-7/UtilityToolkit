@@ -22,7 +22,7 @@ namespace UTK::Loggers {
 	private:
 		std::string fileName;
 		std::string funcName;
-		int fileLine = __LINE__;
+		int fileLine = -1;
 
 		using FormatStrings = std::vector<std::string>;
 
