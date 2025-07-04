@@ -60,12 +60,12 @@ class ILogger {
 
 public:
 	virtual void generatePrefix(string_view fileName, string_view fileLine, string_view funcName) = 0;
-	virtual void generateSuffix(const Operations& ops, const StringVector& data, const StringVector& format) = 0;
+	virtual void generateSuffix(const Operations ops, const StringVector& data, const StringVector& format) = 0;
 	virtual void printLog() const = 0;
 	virtual ~ILogger() = default;
 
 protected:
-	virtual string getTimeStamp() = 0;
+	virtual string getTimeStamp() const = 0;
 };
 
 //===================================================================================================================================
@@ -78,8 +78,7 @@ private:
 	string prefix;
 	string suffix;
 
-protected:
-	string getTimeStamp() {
+	string getTimeStamp() const override {
 
 		/// Acquire current time point
 		time_t now_t{ system_clock::to_time_t(system_clock::now()) };
@@ -94,6 +93,34 @@ protected:
 
 		return ss.str();
 	};
+	string joinFormatData(const StringVector& fmt, const StringVector& data) {
+		
+		/// Reserve memory to prevent constant reinitializations in lambda
+		string infoString;
+		infoString.reserve(300);
+
+		/// Lambda to format the info string 
+		auto append_fn = [&infoString](string_view f, string_view d) {
+			if (!f.empty()) infoString.append(f).append(" ");
+			if (!d.empty()) infoString.append(d).append(" ");
+			};
+
+		/// Combine format and data args together
+		size_t max_size = max(fmt.size(), data.size());
+
+		for (size_t i = 0; i < max_size; i++) {
+			string_view _format = (i < fmt.size()) ? string_view(fmt[i]) : string_view{};
+			string_view _data = (i < data.size()) ? string_view(data[i]) : string_view{};
+
+			append_fn(_format, _data);
+		}
+
+		/// Cleanup final character and optimize memory from prior reservation
+		if (!infoString.empty()) infoString.pop_back();
+		string(infoString).swap(infoString);
+
+		return infoString;
+	}
 
 public:
 	void generatePrefix(string_view fileName, string_view fileLine, string_view funcName) override {
@@ -101,39 +128,10 @@ public:
 		prefix = format("{} {}:{}:{}", getTimeStamp(), fileName, fileLine, funcName);
 	}
 
-	void generateSuffix(const Operations& ops, const StringVector& format, const StringVector& data) override {
-
-		string infoString;
-		size_t max_size = max(format.size(), data.size());
-
-		/// Reserve memory to prevent constant reinitializations in lambda
-		infoString.reserve(300);
-
-		/// Lambda to format the info string 
-		auto append_fn = [&infoString](string_view f, string_view d) {
-			if (!f.empty()) {
-				infoString.append(f).append(" ");
-			}
-			if (!d.empty()) {
-				infoString.append(d).append(" ");
-			}
-			};
-
-		/// Combine format and data args together
-		for (size_t i = 0; i < max_size; i++) {
-			string_view _format = (i < format.size()) ? string_view(format[i]) : string_view{};
-			string_view _data = (i < data.size()) ? string_view(data[i]) : string_view{};
-
-			append_fn(_format, _data);
-		}
-
-		/// Cleanup final character and optimize memory from prior reservation
-		infoString.pop_back();					
-		string(infoString).swap(infoString);	
+	void generateSuffix(const Operations ops, const StringVector& fmt, const StringVector& data) override {
 
 		/// Generate the suffix
-		auto& operation = getOpsToSuffix(ops);
-		suffix.append(operation).append(" ").append(infoString);
+		suffix = format("{} {}", getOpsToSuffix(ops), joinFormatData(fmt, data));
 	}
 
 	void printLog() const override {
@@ -177,7 +175,7 @@ public:
 //												LOGGER HANDLER METHOD IMPLEMENTATIONS
 //===================================================================================================================================
 
-loggerHandler::loggerHandler(string_view file, const int& line, string_view func)
+loggerHandler::loggerHandler(string_view file, const int line, string_view func)
 	: fileName(filesystem::path(file).filename().string()), fileLine(line), funcName(func)
 {
 	;
@@ -193,7 +191,7 @@ void loggerHandler::setFileName(string_view fileName) {
 	this->fileName = filesystem::path(fileName).filename().string();
 }
 
-void loggerHandler::setFileLine(const int& fileLine) {
+void loggerHandler::setFileLine(const int fileLine) {
 
 	this->fileLine = fileLine;
 }

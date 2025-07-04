@@ -55,10 +55,10 @@ namespace UTK::Loggers {
 		 * file name because of the constructors internal logic.
 		 *
 		 * @param file String reference for the file name where log is made.
-		 * @param line: Integer reference for the file line where log is made.
+		 * @param line: Integer for the file line where log is made.
 		 * @param func: String reference for function name where log is made.
 		*/
-		UTK_API loggerHandler(std::string_view file, const int& line, std::string_view func);
+		UTK_API loggerHandler(std::string_view file, const int line, std::string_view func);
 
 		/**
 		 * @brief Set fileName Attribute
@@ -70,9 +70,9 @@ namespace UTK::Loggers {
 		/**
 		 * @brief Set fileLine Attribute
 		 *
-		 * @param fileLine: Integer reference to file line to include in log.
+		 * @param fileLine: Integer to file line to include in log.
 		*/
-		UTK_API void setFileLine(const int& fileLine);
+		UTK_API void setFileLine(const int fileLine);
 
 		/**
 		 * @brief Set funcName Attribute
