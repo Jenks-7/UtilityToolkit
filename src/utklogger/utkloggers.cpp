@@ -8,10 +8,11 @@
 //===================================================================================================================================
 
 #include "logger/utkloggers.hpp"
-#include <filesystem>
 #include <unordered_map>
+#include <filesystem>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <format>
 #include <memory>
 #include <chrono>
@@ -27,8 +28,9 @@ using StringVector = vector<string>;
 using OperationsMap = unordered_map<Operations, string>;
 
 //===================================================================================================================================
-//											    HELPER FUNCTIONS & UTILITIES
+//											        HELPER FUNCTIONS & UTILITIES
 //===================================================================================================================================
+
 static const string getOpsToSuffix(const Operations& opKey) {
 
 	/// Local map that only gets instantiated once between calls
@@ -53,19 +55,21 @@ static const string getOpsToSuffix(const Operations& opKey) {
 }
 
 //===================================================================================================================================
-//													STANDARD LOGGER INTEFACE 
+//													  STANDARD LOGGER INTEFACE 
 //===================================================================================================================================
 
 class ILogger {
 
 public:
-	virtual void generatePrefix(string_view fileName, string_view fileLine, string_view funcName) = 0;
-	virtual void generateSuffix(const Operations ops, const StringVector& data, const StringVector& format) = 0;
-	virtual void printLog() const = 0;
+	virtual void generatePrefix(string_view, string_view, string_view) {};					// Parameter names can be left out
+	virtual void generateSuffix(Operations, const StringVector&, const StringVector&) {};	// Parameter names can be left out
+	virtual void createLog() const = 0;
 	virtual ~ILogger() = default;
 
 protected:
-	virtual string getTimeStamp() const = 0;
+	virtual string getTimeStamp() const {
+		return "";
+	}
 };
 
 //===================================================================================================================================
@@ -128,14 +132,14 @@ public:
 		prefix = format("{} {}:{}:{}", getTimeStamp(), fileName, fileLine, funcName);
 	}
 
-	void generateSuffix(const Operations ops, const StringVector& fmt, const StringVector& data) override {
+	void generateSuffix(Operations ops, const StringVector& fmt, const StringVector& data) override {
 
-		/// Generate the suffix
 		suffix = format("{} {}", getOpsToSuffix(ops), joinFormatData(fmt, data));
 	}
 
-	void printLog() const override {
+	void createLog() const override {
 
+		/// Print only the suffix if no prefix, or print the aligned prefix and suffix
 		if (prefix.empty()) {
 			cout << suffix << "\n";
 		}
@@ -145,6 +149,20 @@ public:
 		}
 	}
 };
+
+/** This needs to be thoguht through properly as it doesn't fit current design hierarchy **/
+
+//class csvLogger : public  ILogger {
+//private:
+//
+//	struct fileData;
+//	string fileName;
+//	ofstream file;
+//
+//public:
+//	csvLogger(string fileName) : fileName(fileName) {};
+//	csvLogger(ofstream&& file) : file(move(file)) {};
+//};
 
 //===================================================================================================================================
 //													 LOGGER FACTORY DEFINITION
@@ -162,6 +180,7 @@ public:
 		case Logger::JSON:
 			//break;
 		case Logger::FILE:
+			//return make_unique<csvLogger>();
 			//break;
 		case Logger::TERMINAL:
 		default:
@@ -172,38 +191,33 @@ public:
 };
 
 //===================================================================================================================================
-//												LOGGER HANDLER METHOD IMPLEMENTATIONS
+//												TERMINAL LOGGER METHOD IMPLEMENTATIONS
 //===================================================================================================================================
 
-loggerHandler::loggerHandler(string_view file, const int line, string_view func)
+loggerHandler<Logger::TERMINAL>::loggerHandler(string_view file, const int line, string_view func)
 	: fileName(filesystem::path(file).filename().string()), fileLine(line), funcName(func)
 {
 	;
 }
 
-string loggerHandler::getFileName() const {
-
-	return filesystem::path(__FILE__).filename().string();
-}
-
-void loggerHandler::setFileName(string_view fileName) {
+void loggerHandler<Logger::TERMINAL>::setFileName(string_view fileName) {
 
 	this->fileName = filesystem::path(fileName).filename().string();
 }
 
-void loggerHandler::setFileLine(const int fileLine) {
+void loggerHandler<Logger::TERMINAL>::setFileLine(const int fileLine) {
 
 	this->fileLine = fileLine;
 }
 
-void loggerHandler::setFuncName(string_view funcName) {
+void loggerHandler<Logger::TERMINAL>::setFuncName(string_view funcName) {
 
 	this->funcName = funcName;
 }
 
-void loggerHandler::logOperation(Operations op, Logger lg, const FormatStrings& format, const ReflectedValues& metadata) {
+void loggerHandler<Logger::TERMINAL>::logOperation(Operations op, const FormatStrings& format, const ReflectedValues& metadata) {
 
-	unique_ptr<ILogger> logger = lgFactory::getLogger(lg);
+	unique_ptr<ILogger> logger = lgFactory::getLogger(Logger::TERMINAL);
 
 	/// If specified parameters are empty, set them as the following.
 	if (fileName.empty())    fileName = "<unknown file>";
@@ -215,5 +229,5 @@ void loggerHandler::logOperation(Operations op, Logger lg, const FormatStrings& 
 	/// Generate log
 	logger->generatePrefix(fileName, lineStr, funcName);
 	logger->generateSuffix(op, format, metadata);
-	logger->printLog();
+	logger->createLog();
 }

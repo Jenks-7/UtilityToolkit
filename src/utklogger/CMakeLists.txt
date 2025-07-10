@@ -5,13 +5,19 @@
 ## Glob source files
 glob_sources(LOGGER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}")
 
-## Create the target with globbed source files
-if(BUILD_SHARED OR BUILD_IMPORT)
-	add_library(utklogger SHARED ${LOGGER_SOURCES})
-else()
-	add_library(utklogger STATIC ${LOGGER_SOURCES})
+# Create library target
+add_library(utklogger ${LOGGER_SOURCES})
+
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(utklogger
+        PRIVATE UTK_BUILD_EXPORT
+        INTERFACE UTK_BUILD_IMPORT
+    )
 endif()
 
-target_include_directories(utklogger PUBLIC "${UTK_HEADERS}")
-
-target_compile_definitions(utklogger PUBLIC UTK_LOGGER)
+# Include directories — accessible to consumers
+target_include_directories(utklogger
+    PUBLIC
+        $<BUILD_INTERFACE:${UTK_HEADERS}>
+        $<INSTALL_INTERFACE:include>
+)

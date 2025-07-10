@@ -13,7 +13,7 @@ set(UTK_HEADERS "${CMAKE_SOURCE_DIR}/include")
 set(UTK_CMAKE_SCRIPTS "${CMAKE_SOURCE_DIR}/scripts/cmake")
 set(UTK_TOOLS "")
 
-project(${UTK} LANGUAGES CXX)
+project(${UTK} LANGUAGES CXX C)
 
 ## Include required scripts
 list(APPEND CMAKE_MODULE_PATH "${UTK_CMAKE_SCRIPTS}")
@@ -21,27 +21,13 @@ include(PythonInfo)
 include(CommonFlags)
 include(GlobFiles)
 
-## Options when added/decided upon
-option(BUILD_SHARED "Build binaries as shared libraries" ON)
-option(IMPORT_SHARED "Build binaries for imports" OFF)
-option(UTK_LOGGER "Add debug logger to the toolkit build output" ON)
-
 if(NOT DEFINED CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND WIN32)
 	set(CMAKE_INSTALL_PREFIX "C:\\${UTK}" CACHE PATH "Install path" FORCE)
 endif()
 
-if(BUILD_SHARED)
-	add_definitions(-DBUILD_SHARED)
-endif()
-
-if(IMPORT_SHARED)
-	add_definitions(-DIMPORT_SHARED)
-endif()
-
-if(BUILD_SHARED AND BUILD_IMPORT)
-    message(WARNING "Both BUILD_SHARED and IMPORT_SHARED are enabled. Disabling IMPORT_SHARED.")
-    set(IMPORT_SHARED OFF CACHE BOOL "Import UtilityToolkit as a prebuilt shared library" FORCE)
-endif()
+## Options when added/decided upon
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(UTK_LOGGER "Add debug logger to the toolkit build output" ON)
 
 ## Check requirements
 if(PYTHON_REQUIRED)

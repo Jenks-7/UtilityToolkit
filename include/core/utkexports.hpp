@@ -69,10 +69,12 @@
 //===================================================================================================================================
 
 #if defined(__WINDOWS__)
-	#if defined(BUILD_SHARED)
+	#if defined(UTK_BUILD_EXPORT)
 		#define UTK_API __declspec(dllexport)
-	#else
+	#elif defined(UTK_BUILD_IMPORT)
 		#define UTK_API __declspec(dllimport)
+	#else
+		#define UTK_API
 	#endif
 	#define UTK_API_CALL __stdcall
 #else
