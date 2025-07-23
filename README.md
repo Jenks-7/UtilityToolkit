@@ -1,4 +1,5 @@
 # Utility Toolkit
+<img width="1536" height="1024" alt="banner" src="https://github.com/user-attachments/assets/c3170093-ed8a-48f7-b44b-d7cb0be34076"/>
 
 ## Overview
 A modular suite of C++ developer tools leveraging the STL and Boost for lightweight JSON handling and scripting support. Built to streamline test infrastructure, automate project workflows, and support future extensions for engineering and diagnostic workflows.
