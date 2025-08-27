@@ -49,11 +49,27 @@ namespace UTK::Types::Metadata {
     class Metadata {
         
     private:
-        T _data;
+        T _tuple;
+
+        template<typename U>
+        std::string to_string(const U& arg) const {
+            using D = std::decay_t<U>;
+
+            if constexpr (std::is_same_v<D, std::string>)
+                return arg;
+            else if constexpr (std::is_same_v<D, const char*>)
+                return std::string(arg);
+            else if constexpr (std::is_convertible_v<D, std::string>)
+                return std::string(arg);
+            else if constexpr (std::is_arithmetic_v<D>)
+                return std::to_string(arg);
+            else
+                static_assert(sizeof(D) == 0, "Unsupported type in _tuple");
+        }
         
     public:
-        explicit Metadata(T&& data) noexcept : _data(std::move(data)) {}
-        explicit Metadata(const T& data) : _data(data) {}
+        explicit Metadata(T&& data) noexcept : _tuple(std::move(data)) {}
+        explicit Metadata(const T& data) : _tuple(data) {}
             
         /**
          * @brief Accessor function to print tuple contents
@@ -62,7 +78,7 @@ namespace UTK::Types::Metadata {
 
             std::apply([](const auto&... args) {
                 ((std::cout << args << " "), ...);  // Fold expression to print each element
-            }, _data);
+            }, _tuple);
 
             std::cout << std::endl;
         }
@@ -79,16 +95,16 @@ namespace UTK::Types::Metadata {
         */
         template<std::size_t Index>
         decltype(auto) getTupleElement() const {
-            return std::get<Index>(_data);
+            return std::get<Index>(_tuple);
         }
 
         /**
          * @brief Extracts and converts tuple elements to strings
          * 
-         * Iterates over all elements in the internal tuple '_data', converting each element
+         * Iterates over all elements in the internal tuple '_tuple', converting each element
          * to a 'std::string' and collecting them into a 'ReflectedValues' vector.
          * 
-         * @return A `ReflectedValues` vector containing the string representation of each element in `_data`.
+         * @return A `ReflectedValues` vector containing the string representation of each element in `_tuple`.
          * 
          * @note If an element is already a `std::string`, it is used as-is. If it is a C-style string 
          *       (`const char*`), it is converted to `std::string`. If it is an arithmetic type 
@@ -97,30 +113,18 @@ namespace UTK::Types::Metadata {
          * 
          * @note This method uses `std::apply` and a fold expression to unpack the tuple and apply
          *       the conversion logic per element.
+         * 
+         * @note The lambda inside the fold expression requires 'this' to be passed to it, to access
+         *       the private 'to_string' method.
         */
         ReflectedValues getData() {
                 
             ReflectedValues result;
+            result.reserve(std::tuple_size_v<T>);
 
-            std::apply([&result](const auto&... args) {
-                (..., result.emplace_back(
-                    [](const auto& arg) -> std::string {
-
-                        using T = std::decay_t<decltype(arg)>;
-
-                        if constexpr (std::is_same_v<T, std::string>)
-                            return arg;
-                        else if constexpr (std::is_same_v<T, const char*>)
-                            return std::string(arg);
-                        else if constexpr (std::is_convertible_v<T, std::string>)
-                            return std::string(arg);
-                        else if constexpr (std::is_arithmetic_v<T>)
-                            return std::to_string(arg);
-                        else
-                            static_assert(sizeof(T) == 0, "Unsupported type in _data");
-                    }(args)
-                ));
-            }, _data);
+            std::apply([&result, this](const auto&... args) {
+                (result.emplace_back(this->to_string(args)), ...);
+            }, _tuple);
 
             return result;
         }
