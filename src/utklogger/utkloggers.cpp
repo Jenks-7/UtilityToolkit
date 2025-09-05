@@ -179,7 +179,7 @@ public:
 		{
 		case Logger::JSON:
 			//break;
-		case Logger::FILE:
+		case Logger::CSV:
 			//return make_unique<csvLogger>();
 			//break;
 		case Logger::TERMINAL:
@@ -231,3 +231,8 @@ void loggerHandler<Logger::TERMINAL>::logOperation(Operations op, const FormatSt
 	logger->generateSuffix(op, format, metadata);
 	logger->createLog();
 }
+
+//===================================================================================================================================
+//												   CSV LOGGER METHOD IMPLEMENTATIONS
+//===================================================================================================================================
+

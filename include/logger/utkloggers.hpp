@@ -139,8 +139,54 @@ namespace UTK::Loggers {
 		);
 	};
 
-	/**
-	 * @brief Alias for a terminal logger
-	*/
+
+	template<>
+	class loggerHandler<Types::States::Logger::CSV> {
+	private:
+		std::string fileName;
+
+		using FormatStrings = std::vector<std::string>;
+
+	public:
+		loggerHandler() = default;
+		~loggerHandler() = default;
+		loggerHandler(const loggerHandler& object) = delete;
+		loggerHandler& operator=(const loggerHandler& object) = delete;
+
+		/**
+		 * @brief 
+		 * 
+		 * @param file: Name of the file to create and write to
+		*/
+		loggerHandler(std::string_view file);
+
+		/**
+		 * @brief Set fileName Attribute
+		 *
+		 * @param fileName: Reference string to file name to include in log.
+		*/
+		void setFileName(std::string_view fileName);
+
+		/**
+		 * @brief Logs the operation conducted
+		 *
+		 * This method handles the generation of logs based on the selected operation
+		 * and logger (e.g. terminal or file). It also allows the user to provide
+		 * additional metadata to be included in the log message, formatted according to
+		 * an optional format vector.
+		 *
+		 * @param op: Operation type used to determine suffix.
+		 * @param metadata: Optional metadata to include.
+		 * @param format: Optional format strings to structure metadata values.
+		*/
+		void logOperation(
+			Types::States::Operations op,
+			const FormatStrings& format = {},
+			const Types::Metadata::ReflectedValues& metadata = {}
+		);
+
+	};
+
 	using terminalLoggerHandler = loggerHandler<Types::States::Logger::TERMINAL>;
+	using csvLoggerHandler = loggerHandler<Types::States::Logger::CSV>;
 }
