@@ -17,9 +17,9 @@ namespace UTK::Types::States {
 	 *	Enumeration to of different types of loggers
 	*/
 	enum class Logger {
+		TERMINAL,
 		JSON,
-		CSV,
-		TERMINAL
+		CSV
 	};
 
 	/**

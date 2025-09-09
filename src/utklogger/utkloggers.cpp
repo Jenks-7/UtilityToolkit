@@ -153,9 +153,9 @@ public:
 /** This needs to be thoguht through properly as it doesn't fit current design hierarchy **/
 
 //class csvLogger : public  ILogger {
+//
 //private:
 //
-//	struct fileData;
 //	string fileName;
 //	ofstream file;
 //
@@ -175,17 +175,17 @@ private:
 
 public:
 	static unique_ptr<ILogger> getLogger(Logger lg) {
-		switch (lg)
-		{
-		case Logger::JSON:
-			//break;
-		case Logger::CSV:
-			//return make_unique<csvLogger>();
-			//break;
-		case Logger::TERMINAL:
-		default:
-			return make_unique<terminalLogger>();
-			break;
+
+		switch (lg) {
+			case Logger::JSON:
+				//break;
+			case Logger::CSV:
+				//return make_unique<csvLogger>();
+				//break;
+			case Logger::TERMINAL:
+			default:
+				return make_unique<terminalLogger>();
+				break;
 		}
 	}
 };
@@ -215,7 +215,10 @@ void loggerHandler<Logger::TERMINAL>::setFuncName(string_view funcName) {
 	this->funcName = funcName;
 }
 
-void loggerHandler<Logger::TERMINAL>::logOperation(Operations op, const FormatStrings& format, const ReflectedValues& metadata) {
+void loggerHandler<Logger::TERMINAL>::logOperation(
+		Operations op, 
+		const FormatStrings& format, 
+		const ReflectedValues& metadata) {
 
 	unique_ptr<ILogger> logger = lgFactory::getLogger(Logger::TERMINAL);
 
@@ -235,4 +238,3 @@ void loggerHandler<Logger::TERMINAL>::logOperation(Operations op, const FormatSt
 //===================================================================================================================================
 //												   CSV LOGGER METHOD IMPLEMENTATIONS
 //===================================================================================================================================
-

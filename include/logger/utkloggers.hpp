@@ -3,8 +3,8 @@
 // @author	Jac Jenkins
 // @date	25/09/2024
 // 
-// @brief	Header file containing top level API definitions for logging capabilities 
-//			in Utility Toolkit.
+// @brief	Header file containing top level API definitions for the key:value
+//			loggers found in UTK's logging capabilities
 //===================================================================================================================================
 
 #pragma once
@@ -12,8 +12,11 @@
 #include "core/utkexports.hpp"
 #include "types/utkstates.hpp"
 #include "types/utkmetadata.hpp"
+#include "types/utklogentry.hpp"
 #include <string_view>
 #include <string>
+#include <queue>
+#include <mutex>
 
 namespace UTK::Loggers {
 
@@ -139,54 +142,30 @@ namespace UTK::Loggers {
 		);
 	};
 
+	/// TESTING GROUND FOR NEW HANDLER STRUCTURE ///
 
-	template<>
-	class loggerHandler<Types::States::Logger::CSV> {
+	/**
+	 * @brief Class used to store data within to be dispatched to the UTK logger system
+	 */
+	class logDispatcher {
 	private:
-		std::string fileName;
+		using loggerEntryQueue = std::queue<UTK::Types::LogEntry::logEntry>;
 
-		using FormatStrings = std::vector<std::string>;
-
+		loggerEntryQueue logQueue;
+		std::mutex _mutex;
 	public:
-		loggerHandler() = default;
-		~loggerHandler() = default;
-		loggerHandler(const loggerHandler& object) = delete;
-		loggerHandler& operator=(const loggerHandler& object) = delete;
-
 		/**
-		 * @brief 
+		 * @brief Adds entries to the dispatcher internal queue
 		 * 
-		 * @param file: Name of the file to create and write to
-		*/
-		loggerHandler(std::string_view file);
+		 * @param entry: A LogEntry struct to be actioned by the logging system
+		 */
+		void pushEntry(UTK::Types::LogEntry::logEntry entry);
 
 		/**
-		 * @brief Set fileName Attribute
-		 *
-		 * @param fileName: Reference string to file name to include in log.
-		*/
-		void setFileName(std::string_view fileName);
-
-		/**
-		 * @brief Logs the operation conducted
-		 *
-		 * This method handles the generation of logs based on the selected operation
-		 * and logger (e.g. terminal or file). It also allows the user to provide
-		 * additional metadata to be included in the log message, formatted according to
-		 * an optional format vector.
-		 *
-		 * @param op: Operation type used to determine suffix.
-		 * @param metadata: Optional metadata to include.
-		 * @param format: Optional format strings to structure metadata values.
-		*/
-		void logOperation(
-			Types::States::Operations op,
-			const FormatStrings& format = {},
-			const Types::Metadata::ReflectedValues& metadata = {}
-		);
-
+		 * @brief Evaluates each item in the queue and dispatches each to the logging system
+		 */
+		void dispatchLogs();
 	};
 
-	using terminalLoggerHandler = loggerHandler<Types::States::Logger::TERMINAL>;
-	using csvLoggerHandler = loggerHandler<Types::States::Logger::CSV>;
+	/// TESTING GROUND FOR NEW HANDLER STRUCTURE ///
 }
