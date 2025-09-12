@@ -130,7 +130,7 @@ namespace UTK::Types::Metadata {
         }
     };
 
-    namespace Helpers {
+    inline namespace MetaHelpers {
 
         /**
          * @brief A utility function that creates a tuple from the given arguments.

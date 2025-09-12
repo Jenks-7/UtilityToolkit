@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <string>
+#include <optional>
 #include "types/utkstates.hpp"
 
 using FormatStrings = std::vector<std::string>;
@@ -18,9 +19,38 @@ using FormatStrings = std::vector<std::string>;
 namespace UTK::Types::LogEntry {
 
 	struct logEntry {
-		UTK::Types::States::Logger lg;
-		UTK::Types::States::Operations op;
+		States::Logger lg;
+		States::Operations op;
 		FormatStrings formatArgs;
 		FormatStrings formatValues;
+		std::optional<std::string> fileName = std::nullopt;
+		std::optional<int> fileLine = std::nullopt;
+		std::optional<std::string> funcName = std::nullopt;
 	};
+
+	inline namespace LogEntryHelpers {
+
+		inline logEntry makeLogEntry(
+			States::Logger lg,
+			States::Operations op,
+			FormatStrings args,
+			FormatStrings values,
+			std::string fileName = "",
+			int fileLine = -1,
+			std::string funcName = "")
+		{
+			return { lg, op, std::move(args), std::move(values), fileName, fileLine, funcName };
+		}
+
+		inline logEntry makeTerminalEntry(
+			States::Operations op = States::Operations::LG_NOP,
+			FormatStrings args = {},
+			FormatStrings values = {},
+			std::string fileName = "",
+			int fileLine = -1,
+			std::string funcName = "")
+		{
+			return { States::Logger::TERMINAL, op, std::move(args), std::move(values), fileName, fileLine, funcName };
+		}
+	}
 }

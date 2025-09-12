@@ -23,6 +23,7 @@ using namespace chrono;
 using namespace UTK::Loggers;
 using namespace UTK::Types::States;
 using namespace UTK::Types::Metadata;
+using namespace UTK::Types::LogEntry;
 
 using StringVector = vector<string>;
 using OperationsMap = unordered_map<Operations, string>;
@@ -58,13 +59,11 @@ static const string getOpsToSuffix(const Operations& opKey) {
 //													  STANDARD LOGGER INTEFACE 
 //===================================================================================================================================
 
-class ILogger {
+class IKeyValueLogger {
 
 public:
-	virtual void generatePrefix(string_view, string_view, string_view) {};					// Parameter names can be left out
-	virtual void generateSuffix(Operations, const StringVector&, const StringVector&) {};	// Parameter names can be left out
-	virtual void createLog() const = 0;
-	virtual ~ILogger() = default;
+	virtual void createLog(logEntry& entry) = 0;
+	virtual ~IKeyValueLogger() = default;
 
 protected:
 	virtual string getTimeStamp() const {
@@ -76,7 +75,7 @@ protected:
 //											    INTERFACE AND LOGGER IMPLEMENTATIONS
 //===================================================================================================================================
 
-class terminalLogger : public ILogger {
+class terminalLogger : public IKeyValueLogger {
 
 private:
 	string prefix;
@@ -125,32 +124,49 @@ private:
 
 		return infoString;
 	}
-
-public:
-	void generatePrefix(string_view fileName, string_view fileLine, string_view funcName) override {
+	void generatePrefix(string_view fileName, int fileLine, string_view funcName) {
 
 		prefix = format("{} {}:{}:{}", getTimeStamp(), fileName, fileLine, funcName);
 	}
+	void generateSuffix(Operations op, const StringVector& fmt, const StringVector& data) {
 
-	void generateSuffix(Operations ops, const StringVector& fmt, const StringVector& data) override {
-
-		suffix = format("{} {}", getOpsToSuffix(ops), joinFormatData(fmt, data));
+		suffix = format("{} {}", getOpsToSuffix(op), joinFormatData(fmt, data));
 	}
 
-	void createLog() const override {
+public:
 
-		/// Print only the suffix if no prefix, or print the aligned prefix and suffix
-		if (prefix.empty()) {
-			cout << suffix << "\n";
+	void createLog(logEntry& entry) noexcept override {
+		try {
+			auto file = entry.fileName.value_or("<unknown_file>");
+			auto func = entry.funcName.value_or("<unknown_func>");
+			auto line = entry.fileLine.value_or(-1);
+
+			// Shorten file path to just be file name
+			file = filesystem::path(file).filename().string();
+
+			// These methods create the string for the prefix and suffix members
+			generatePrefix(file, line, func);
+			generateSuffix(entry.op, entry.formatArgs, entry.formatValues);
+
+			/// Print only the suffix if no prefix, or print the aligned prefix and suffix
+			if (prefix.empty()) {
+				cout << suffix << "\n";
+			}
+			else {
+				constexpr int fixedPrefixWidth = 60;
+				cout << format("{:<{}} {}", prefix, fixedPrefixWidth, suffix) << "\n";
+			}
 		}
-		else {
-			constexpr int fixedPrefixWidth = 70;
-			cout << format("{:<{}} {}", prefix, fixedPrefixWidth, suffix) << "\n";
+		catch (const std::exception& e) {
+			std::cerr << "[Terminal Logger Error]" << e.what() << "\n";
+		}
+		catch (...) {
+			std::cerr << "[Terminal Logger Error] Unknown exception\n";
 		}
 	}
 };
 
-/** This needs to be thoguht through properly as it doesn't fit current design hierarchy **/
+/** This needs to be thought through properly as it doesn't fit current design hierarchy **/
 
 //class csvLogger : public  ILogger {
 //
@@ -174,7 +190,7 @@ private:
 	lgFactory() = delete;
 
 public:
-	static unique_ptr<ILogger> getLogger(Logger lg) {
+	static unique_ptr<IKeyValueLogger> getLogger(Logger lg) {
 
 		switch (lg) {
 			case Logger::JSON:
@@ -191,50 +207,60 @@ public:
 };
 
 //===================================================================================================================================
-//												TERMINAL LOGGER METHOD IMPLEMENTATIONS
+//													 LOG CONTROLLER DEFINITION
 //===================================================================================================================================
 
-loggerHandler<Logger::TERMINAL>::loggerHandler(string_view file, const int line, string_view func)
-	: fileName(filesystem::path(file).filename().string()), fileLine(line), funcName(func)
-{
-	;
-}
+class logController {
+private:
+	using LoggerCache = unordered_map<Logger, unique_ptr<IKeyValueLogger>>;
 
-void loggerHandler<Logger::TERMINAL>::setFileName(string_view fileName) {
+	LoggerCache cache;
+	IKeyValueLogger& getLogger(Logger lgType) {
+		
+		auto lg = cache.find(lgType);
+		if (lg != cache.end()) {
+			return *(lg->second);
+		}
 
-	this->fileName = filesystem::path(fileName).filename().string();
-}
+		// Lazy init to create a logger instance and store in the cache for future lookup
+		auto logger = lgFactory::getLogger(lgType);
+		IKeyValueLogger& ref = *logger;
+		cache.emplace(lgType, move(logger));
 
-void loggerHandler<Logger::TERMINAL>::setFileLine(const int fileLine) {
+		return ref;
+	}
 
-	this->fileLine = fileLine;
-}
-
-void loggerHandler<Logger::TERMINAL>::setFuncName(string_view funcName) {
-
-	this->funcName = funcName;
-}
-
-void loggerHandler<Logger::TERMINAL>::logOperation(
-		Operations op, 
-		const FormatStrings& format, 
-		const ReflectedValues& metadata) {
-
-	unique_ptr<ILogger> logger = lgFactory::getLogger(Logger::TERMINAL);
-
-	/// If specified parameters are empty, set them as the following.
-	if (fileName.empty())    fileName = "<unknown file>";
-	if (funcName.empty())    funcName = "<unknown function>";
-	
-	/// Needed to allow for clearer output when invalid params are given
-    string lineStr = fileLine < 0 ? "<unknown_line>" : to_string(fileLine);
-
-	/// Generate log
-	logger->generatePrefix(fileName, lineStr, funcName);
-	logger->generateSuffix(op, format, metadata);
-	logger->createLog();
-}
+public:
+	void logEntry(logEntry&& entry) {
+		IKeyValueLogger& lg = getLogger(entry.lg);
+		lg.createLog(entry);
+	}
+};
 
 //===================================================================================================================================
-//												   CSV LOGGER METHOD IMPLEMENTATIONS
+//												  DISPATCHER METHOD IMPLEMENTATIONS
 //===================================================================================================================================
+
+void logDispatcher::pushEntry(logEntry entry) {
+
+	lock_guard<mutex> lock(_mutex);
+	_logQueue.push(entry);
+}
+
+void logDispatcher::dispatchLogs() {
+
+	loggerEntryQueue localQueue;
+	unique_ptr<logController> dispatchController = make_unique<logController>();
+
+	// Lock the thread for the copy to improve performance in single and multithreaded use
+	{
+		lock_guard<mutex> lock(_mutex);
+		swap(localQueue, _logQueue);	// Effectively copies the queue to the local queue and clears the _logQueue member
+	}
+
+	while (!localQueue.empty()) {
+
+		dispatchController->logEntry(move(localQueue.front()));
+		localQueue.pop();
+	}
+}
