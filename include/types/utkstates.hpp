@@ -12,10 +12,8 @@
 namespace UTK::Types::States {
 
 	/**
-	 *	@brief Enum for logger types
-	 *
-	 *	Enumeration to of different types of loggers
-	*/
+	 *	@brief Enumeration to of different types of loggers
+	 */
 	enum class Logger {
 		TERMINAL,
 		JSON,
@@ -23,10 +21,8 @@ namespace UTK::Types::States {
 	};
 
 	/**
-	 *	@brief Enum for operation types
-	 *
-	 *	Enumeration used to represent the different logging operations.
-	*/
+	 *	@brief Enumeration used to represent the different logging operations.
+	 */
 	enum class Operations {
 		LG_WR,
 		LG_RD,

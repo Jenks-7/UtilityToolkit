@@ -20,16 +20,13 @@
 
 namespace UTK::Loggers {
 
-	/// TESTING GROUND FOR NEW HANDLER STRUCTURE ///
-
 	/**
 	 * @brief Class used to store data within to be dispatched to the UTK logger system
 	 */
 	class logDispatcher {
 	private:
 		using loggerEntryQueue = std::queue<UTK::Types::LogEntry::logEntry>;
-		
-		struct Impl;
+
 		std::mutex _mutex;
 		loggerEntryQueue _logQueue;
 	public:
@@ -45,6 +42,4 @@ namespace UTK::Loggers {
 		 */
 		void dispatchLogs();
 	};
-
-	/// TESTING GROUND FOR NEW HANDLER STRUCTURE ///
 }

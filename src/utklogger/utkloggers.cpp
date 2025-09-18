@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <numeric>
 #include <format>
 #include <memory>
 #include <chrono>
@@ -26,24 +27,24 @@ using namespace UTK::Types::Metadata;
 using namespace UTK::Types::LogEntry;
 
 using StringVector = vector<string>;
-using OperationsMap = unordered_map<Operations, string>;
+using OperationsMap = unordered_map<Operations, string_view>;
 
 //===================================================================================================================================
 //											        HELPER FUNCTIONS & UTILITIES
 //===================================================================================================================================
 
-static const string getOpsToSuffix(const Operations& opKey) {
+static const string_view getOpsToSuffix(const Operations& opKey) {
 
 	/// Local map that only gets instantiated once between calls
-	static const OperationsMap opsToSuffix{
-		{ Operations::LG_RD,  "[READ]" },
-		{ Operations::LG_WR,  "[WRITE]" },
-		{ Operations::LG_IN,  "[LOGIN]" },
-		{ Operations::LG_ERR, "[ERROR]" },
-		{ Operations::LG_OUT, "[LOGOUT]" },
-		{ Operations::LG_IDL, "[IDLE]" },
-		{ Operations::LG_MSG, "[MESSAGE]" },
-		{ Operations::LG_NOP, "" }
+	static const OperationsMap opsToSuffix {
+		{ Operations::LG_RD,  "[READ]"sv },
+		{ Operations::LG_WR,  "[WRITE]"sv },
+		{ Operations::LG_IN,  "[LOGIN]"sv },
+		{ Operations::LG_ERR, "[ERROR]"sv },
+		{ Operations::LG_OUT, "[LOGOUT]"sv },
+		{ Operations::LG_IDL, "[IDLE]"sv },
+		{ Operations::LG_MSG, "[MESSAGE]"sv },
+		{ Operations::LG_NOP, ""sv }
 	};
 	
 	/// Check if operation is present in map
@@ -52,7 +53,7 @@ static const string getOpsToSuffix(const Operations& opKey) {
 		return it->second;
 	}
 	
-	return "[UNKNOWN]"s;
+	return "[UNKNOWN]"sv;
 }
 
 //===================================================================================================================================
@@ -78,8 +79,9 @@ protected:
 class terminalLogger : public IKeyValueLogger {
 
 private:
-	string prefix;
-	string suffix;
+	string _prefix;
+	string _suffix;
+	const int _fixedPrefixWidth = 60;
 
 	string getTimeStamp() const override {
 
@@ -108,7 +110,7 @@ private:
 			if (!d.empty()) infoString.append(d).append(" ");
 			};
 
-		/// Combine format and data args together
+		/// Combine format and data args together & account for differing lengths
 		size_t max_size = max(fmt.size(), data.size());
 
 		for (size_t i = 0; i < max_size; i++) {
@@ -120,17 +122,17 @@ private:
 
 		/// Cleanup final character and optimize memory from prior reservation
 		if (!infoString.empty()) infoString.pop_back();
-		string(infoString).swap(infoString);
+		//string(infoString).swap(infoString);		// UNECESSARY: Modern compilers will use NVRO/move schemantics
 
 		return infoString;
 	}
 	void generatePrefix(string_view fileName, int fileLine, string_view funcName) {
 
-		prefix = format("{} {}:{}:{}", getTimeStamp(), fileName, fileLine, funcName);
+		_prefix = format("{} {}:{}:{}", getTimeStamp(), fileName, fileLine, funcName);
 	}
 	void generateSuffix(Operations op, const StringVector& fmt, const StringVector& data) {
 
-		suffix = format("{} {}", getOpsToSuffix(op), joinFormatData(fmt, data));
+		_suffix = format("{} {}", getOpsToSuffix(op), joinFormatData(fmt, data));
 	}
 
 public:
@@ -149,36 +151,103 @@ public:
 			generateSuffix(entry.op, entry.formatArgs, entry.formatValues);
 
 			/// Print only the suffix if no prefix, or print the aligned prefix and suffix
-			if (prefix.empty()) {
-				cout << suffix << "\n";
+			if (_prefix.empty()) {
+				cout << _suffix << "\n";
 			}
 			else {
-				constexpr int fixedPrefixWidth = 60;
-				cout << format("{:<{}} {}", prefix, fixedPrefixWidth, suffix) << "\n";
+				cout << format("{:<{}} {}", _prefix, _fixedPrefixWidth, _suffix) << "\n";
 			}
 		}
 		catch (const std::exception& e) {
-			std::cerr << "[Terminal Logger Error]" << e.what() << "\n";
+			cerr << "[Terminal Logger Error] " << e.what() << "\n";
 		}
 		catch (...) {
-			std::cerr << "[Terminal Logger Error] Unknown exception\n";
+			cerr << "[Terminal Logger Error] Unknown exception\n";
 		}
 	}
+
+	terminalLogger() = default;
+	terminalLogger(terminalLogger& lg) = delete;
+	terminalLogger(terminalLogger&& lg) = delete;
+	terminalLogger& operator=(const terminalLogger&) = delete;
 };
 
-/** This needs to be thought through properly as it doesn't fit current design hierarchy **/
+class csvLogger : public  IKeyValueLogger {
 
-//class csvLogger : public  ILogger {
-//
-//private:
-//
-//	string fileName;
-//	ofstream file;
-//
-//public:
-//	csvLogger(string fileName) : fileName(fileName) {};
-//	csvLogger(ofstream&& file) : file(move(file)) {};
-//};
+private:
+	ofstream _file;
+
+	void ensureOpen(const string& fileName = {}) {
+		if (!_file.is_open()) {
+			throw runtime_error(fileName.empty()
+				? "Invalid file stream"
+				: "Failed to open csv file: " + fileName
+			);
+		}
+	}
+	string escapeCsvField(string_view field) {
+
+		// Check for presence of CSV special characters(comma, quote, or newline). Is so, quoting is required.
+		bool needsQuotes = field.find_first_of(",\"\n") != string::npos;
+
+		string result;
+
+		if (needsQuotes) {
+			result.reserve(field.size() + 2);	// Add memory for the start and end quotes
+			result.push_back('"');				// Add in starting quote to the result
+
+			// If char is a quote, escape by doubling them.
+			for (char c : field) {
+				if (c == '"') result += "\"\"";
+				else result.push_back(c);
+			}
+			result.push_back('"');				// Add in closing quote
+		}
+		else {
+			// No escaping needed, copy field directly
+			result.assign(field);
+		}
+
+		return result;
+	}
+	string makeCsvRow(const vector<string>& fields) {
+
+		// UPDATE FORMATTING LOGIC AND MERGE CSV AND TERMINAL METHODS
+		// TO A BETTER WAY TO ACCOUNT FOR LSIST VALUES ETC IN CHATGPT CONVO.
+
+		// Creatively utilizes accumulate() to format and join CSV fields.
+		string str = accumulate(
+			next(fields.begin()), fields.end(), escapeCsvField(fields[0]),
+			[this](const string& a, const string& b) {
+				return a + ',' + escapeCsvField(b);
+			}
+		);
+
+		return str;
+	}
+
+public:
+	explicit csvLogger(const string& fileName, ios::openmode mode) : _file(fileName, mode) {
+		ensureOpen(fileName);
+	};
+	csvLogger(ofstream&& file) : _file(move(file)) {
+		ensureOpen();
+	};
+
+	void createLog(logEntry& entry) noexcept override {
+		
+		// Decide on a full row of all keys/values or tabulating the Key 
+		// Values at the end of each log. All that will change is the way
+		// each row is created here and the makeCsvRow method will alter
+		// to just work for each key value
+
+		return;
+	}
+
+	csvLogger() = default;
+	csvLogger(ofstream& file) = delete;
+	csvLogger& operator=(const csvLogger&) = delete;
+};
 
 //===================================================================================================================================
 //													 LOGGER FACTORY DEFINITION
@@ -196,8 +265,7 @@ public:
 			case Logger::JSON:
 				//break;
 			case Logger::CSV:
-				//return make_unique<csvLogger>();
-				//break;
+				return make_unique<csvLogger>();
 			case Logger::TERMINAL:
 			default:
 				return make_unique<terminalLogger>();

@@ -23,7 +23,7 @@
  * This concept ensures that 'T' has a 'std::tuple_size' specialization,
  * which implies that 'T' behaves like a tuple(or similar container that
  * allows the use of 'std::tuple_size<T>' to retrieve its size).
-*/
+ */
 template<typename T>
 concept TupleType = requires{ typename std::tuple_size<T>::type; };
 
@@ -36,7 +36,7 @@ concept TupleType = requires{ typename std::tuple_size<T>::type; };
  * All other types are passed through unchanged(after type decay)
  * 
  * @tparam T: The original type to sanitize.
-*/
+ */
 template <typename T>
 using CleanedType = 
     std::conditional_t<std::is_same_v<std::decay_t<T>, const char*>, std::string, std::decay_t<T>>;
@@ -73,7 +73,7 @@ namespace UTK::Types::Metadata {
             
         /**
          * @brief Accessor function to print tuple contents
-        */
+         */
         void print() const {
 
             std::apply([](const auto&... args) {
@@ -92,7 +92,7 @@ namespace UTK::Types::Metadata {
          * @tparam Index: The index of the tuple to evaluate.
          * 
          * @return The value at the associated index.
-        */
+         */
         template<std::size_t Index>
         decltype(auto) getTupleElement() const {
             return std::get<Index>(_tuple);
@@ -116,7 +116,7 @@ namespace UTK::Types::Metadata {
          * 
          * @note The lambda inside the fold expression requires 'this' to be passed to it, to access
          *       the private 'to_string' method.
-        */
+         */
         ReflectedValues getData() {
                 
             ReflectedValues result;
@@ -140,8 +140,8 @@ namespace UTK::Types::Metadata {
          * arguments to `std::make_tuple` using perfect forwarding to maintain efficiency
          * and correctness with respect to lvalue and rvalue references.
          *
-         * @tparam ...Args: The types of the arguments, passed as a parameter pack.
-         * @param args:     The arguments to be included in the resulting tuple, forwarded as-is.
+         * @tparam ...Args  The types of the arguments, passed as a parameter pack.
+         * @param args      The arguments to be included in the resulting tuple, forwarded as-is.
          *
          * @return A tuple containing the passed arguments.
          *
@@ -153,7 +153,7 @@ namespace UTK::Types::Metadata {
          *       allowing it to also be used.
          * 
          * @note See CleanedTypes for further info
-        */
+         */
         template<typename ...Args>
         std::tuple<CleanedType<Args>...> makeTuple(Args&&... args) {
             return std::make_tuple(std::forward<Args>(args)...);
