@@ -98,6 +98,8 @@ private:
 
 		return ss.str();
 	};
+
+	// TO-DO: This function will be updated to change suffix formatting for KVEntry generation
 	string joinFormatData(const StringVector& fmt, const StringVector& data) {
 		
 		/// Reserve memory to prevent constant reinitializations in lambda
