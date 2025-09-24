@@ -39,7 +39,9 @@ concept TupleType = requires{ typename std::tuple_size<T>::type; };
  */
 template <typename T>
 using CleanedType = 
-    std::conditional_t<std::is_same_v<std::decay_t<T>, const char*>, std::string, std::decay_t<T>>;
+    std::conditional_t<std::is_same_v<std::decay_t<T>, const char*>, 
+    std::string, 
+    std::decay_t<T>>;
 
 namespace UTK::Types::Metadata {
 
@@ -68,8 +70,14 @@ namespace UTK::Types::Metadata {
         }
         
     public:
-        explicit Metadata(T&& data) noexcept : _tuple(std::move(data)) {}
-        explicit Metadata(const T& data) : _tuple(data) {}
+        explicit Metadata(T&& data) noexcept : _tuple(std::move(data)) 
+        {
+            ;
+        }
+        explicit Metadata(const T& data) : _tuple(data) 
+        {
+            ;
+        }
             
         /**
          * @brief Accessor function to print tuple contents

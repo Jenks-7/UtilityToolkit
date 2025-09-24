@@ -99,8 +99,8 @@ private:
 		return ss.str();
 	};
 
-	// TO-DO: This function will be updated to change suffix formatting for KVEntry generation
-	string joinFormatData(const StringVector& fmt, const StringVector& data) {
+	// TO-DO: Possibly refactor this function when the schema side of things is completed
+	string joinFormatData(const StringVector& Keys, const StringVector& Values) {
 		
 		/// Reserve memory to prevent constant reinitializations in lambda
 		string infoString;
@@ -112,14 +112,14 @@ private:
 			if (!d.empty()) infoString.append(d).append(" ");
 			};
 
-		/// Combine format and data args together & account for differing lengths
-		size_t max_size = max(fmt.size(), data.size());
+		/// Combine format and Values args together & account for differing lengths
+		size_t max_size = max(Keys.size(), Values.size());
 
 		for (size_t i = 0; i < max_size; i++) {
-			string_view _format = (i < fmt.size()) ? string_view(fmt[i]) : string_view{};
-			string_view _data = (i < data.size()) ? string_view(data[i]) : string_view{};
+			string_view _format = (i < Keys.size()) ? string_view(Keys[i]) : string_view{};
+			string_view _Values = (i < Values.size()) ? string_view(Values[i]) : string_view{};
 
-			append_fn(_format, _data);
+			append_fn(_format, _Values);
 		}
 
 		/// Cleanup final character and optimize memory from prior reservation
@@ -132,9 +132,9 @@ private:
 
 		_prefix = format("{} {}:{}:{}", getTimeStamp(), fileName, fileLine, funcName);
 	}
-	void generateSuffix(Operations op, const StringVector& fmt, const StringVector& data) {
+	void generateSuffix(Operations op, const StringVector& Keys, const StringVector& Values) {
 
-		_suffix = format("{} {}", getOpsToSuffix(op), joinFormatData(fmt, data));
+		_suffix = format("{} {}", getOpsToSuffix(op), joinFormatData(Keys, Values));
 	}
 
 public:
@@ -150,7 +150,7 @@ public:
 
 			// These methods create the string for the prefix and suffix members
 			generatePrefix(file, line, func);
-			generateSuffix(entry.op, entry.formatArgs, entry.formatValues);
+			generateSuffix(entry.op, entry.formatKeys, entry.formatValues);
 
 			/// Print only the suffix if no prefix, or print the aligned prefix and suffix
 			if (_prefix.empty()) {

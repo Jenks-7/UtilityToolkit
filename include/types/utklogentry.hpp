@@ -24,7 +24,7 @@ namespace UTK::Types::LogEntry {
 	struct logEntry {
 		States::Logger lg;
 		States::Operations op;
-		FormatStrings formatArgs;
+		FormatStrings formatKeys;
 		FormatStrings formatValues;
 		std::optional<std::string> fileName = std::nullopt;
 		std::optional<int> fileLine = std::nullopt;
@@ -38,7 +38,7 @@ namespace UTK::Types::LogEntry {
 		 * 
 		 * @param lg		Logger type to use for output.
 		 * @param op		Operation performed.
-		 * @param args		Format string arguments.
+		 * @param keys		Format string arguments.
 		 * @param values	Format string values.
 		 * @param fileName	Name of file where log was created(may be unused by some loggers).
 		 * @param fileLine	Line of file where log was created(may be unused by some loggers).
@@ -49,20 +49,20 @@ namespace UTK::Types::LogEntry {
 		inline logEntry makeLogEntry(
 			Types::States::Logger lg,
 			Types::States::Operations op = States::Operations::LG_NOP,
-			FormatStrings args = {},
+			FormatStrings keys = {},
 			FormatStrings values = {},
 			std::string fileName = "",
 			int fileLine = -1,
 			std::string funcName = "")
 		{
-			return { lg, op, std::move(args), std::move(values), fileName, fileLine, funcName };
+			return { lg, op, std::move(keys), std::move(values), fileName, fileLine, funcName };
 		}
 
 		/**
 		 * @brief Helper function to create logEntry objects for terminal logging.
 		 *
 		 * @param op		Operation performed(default: LG_NOP, no operation specified).
-		 * @param args		Format string arguments.
+		 * @param keys		Format string arguments.
 		 * @param values	Format string values.
 		 * @param fileName	Name of file where log was created(may be unused by some loggers).
 		 * @param fileLine	Line of file where log was created(may be unused by some loggers).
@@ -72,31 +72,31 @@ namespace UTK::Types::LogEntry {
 		 */
 		inline logEntry makeTerminalEntry(
 			States::Operations op = States::Operations::LG_NOP,
-			FormatStrings args = {},
+			FormatStrings keys = {},
 			FormatStrings values = {},
 			std::string fileName = "",
 			int fileLine = -1,
 			std::string funcName = "")
 		{
-			return { States::Logger::TERMINAL, op, std::move(args), std::move(values), fileName, fileLine, funcName };
+			return { States::Logger::TERMINAL, op, std::move(keys), std::move(values), fileName, fileLine, funcName };
 		}
 
 		/**
 		 * @brief Helper function to create logEntry objects for csv logging
 		 * 
 		 * @param op		Operation performed(default: LG_NOP, no operation specified).
-		 * @param args		Format string arguments.
+		 * @param keys		Format string arguments.
 		 * @param values	Format string values.
 		 * 
 		 * @return Configured logEntry object.
 		 */
 		inline logEntry makeCsvEntry(
 			States::Operations op,
-			FormatStrings args,
+			FormatStrings keys,
 			FormatStrings values,
 			std::string fileName)
 		{
-			return { States::Logger::CSV, op, std::move(args), std::move(values), fileName };
+			return { States::Logger::CSV, op, std::move(keys), std::move(values), fileName };
 		}
 	}
 }
