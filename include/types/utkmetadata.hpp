@@ -5,6 +5,10 @@
 // 
 // @brief	Header file containing type declarations & associated helper funcitons
 //			for the Utility Toolkit metadata type
+// 
+// @note    Currently this utility stringifies an input type permanently. Future updates 
+//          will expand it to reflect the types back, fully providing a rudimentary form
+//          of runtime reflection, with analysis at compile time.
 //===================================================================================================================================
 
 #pragma once

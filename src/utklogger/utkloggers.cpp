@@ -265,7 +265,7 @@ public:
 
 		switch (lg) {
 			case Logger::JSON:
-				//break;
+				//return make_unqiue<jsonLogger>();
 			case Logger::CSV:
 				return make_unique<csvLogger>();
 			case Logger::TERMINAL:

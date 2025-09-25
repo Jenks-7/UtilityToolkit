@@ -9,7 +9,9 @@
 
 #pragma once
 
+#include "schema/SchemaBuilder.hpp"
 #include "types/utkstates.hpp"
+#include "schema/Schema.hpp"
 #include <optional>
 #include <vector>
 #include <string>
@@ -32,6 +34,13 @@ namespace UTK::Types::LogEntry {
 	};
 
 	inline namespace LogHelpers {
+
+		/// TO-DO:
+		///  This section will be redefined to utilize the schema building.
+		///  Whilst it may reduce the elegance it allows for better usage
+		///  of loggers within C++, over aiming for C++ usage. Alternatively
+		///  these helpers can be kept for C usage, as evident by the simple
+		///  design of each.
 
 		/**
 		 * @brief Helper function to create and configure logEntry objects
