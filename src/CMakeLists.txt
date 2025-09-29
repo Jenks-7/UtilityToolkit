@@ -3,10 +3,10 @@
 # Conditionally include modules based on options or variables
 
 # Modules enabled via options (make sure options are defined in root CMakeLists)
-if(DEFINED UTK_LOGGER)
-    list(APPEND UTK_TOOLS "utklogger")
+if(DEFINED UTK_DISPATCH)
+    list(APPEND UTK_TOOLS "utkdispatch")
 else()
-    message(STATUS "UTK_LOGGER module disabled")
+    message(STATUS "UTK_DISPATCH module disabled")
 endif()
 
 ## Apply common compiler flags
