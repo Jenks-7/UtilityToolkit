@@ -26,8 +26,10 @@ namespace UTK::Types::LogEntry {
 	struct logEntry {
 		States::Logger lg;
 		States::Operations op;
+		//=COMBINE INTO A PAIR AFTER SCHEMA/NORMALIZATION=//
 		FormatStrings formatKeys;
 		FormatStrings formatValues;
+		//================================================//
 		std::optional<std::string> fileName = std::nullopt;
 		std::optional<int> fileLine = std::nullopt;
 		std::optional<std::string> funcName = std::nullopt;
@@ -38,9 +40,10 @@ namespace UTK::Types::LogEntry {
 		/// TO-DO:
 		///  This section will be redefined to utilize the schema building.
 		///  Whilst it may reduce the elegance it allows for better usage
-		///  of loggers within C++, over aiming for C++ usage. Alternatively
+		///  of loggers within C++, over aiming for C/C++ usage. Alternatively
 		///  these helpers can be kept for C usage, as evident by the simple
-		///  design of each.
+		///  design of each where the schema system is optional and aimed for
+		/// C++ envs.
 
 		/**
 		 * @brief Helper function to create and configure logEntry objects
