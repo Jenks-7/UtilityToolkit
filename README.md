@@ -13,12 +13,13 @@ A modular suite of C++ developer tools leveraging the STL and Boost for lightwei
 - Interoperability layer for surface level tools and lib features
 - UTK::Logger(Remaining logger types)
 - UTK::ScriptEngine
-- UTK::Peripheral(For hardware comms)
-- UTK::OPCUA(For IoT, or similar data historization and gathering tools)
+- UTK::Peripheral(hardware comms)
+- UTK::OPCUA(Wrapper around open62541 or using boost::beats to create OPC servers)
 
 ## Considerations
 - UTK::Client(Simple web client for fetching data)
 - UTK::Caching(LRUCache and other caching options or similar data structures for use in creating advanced tools)
+- UTK::Progressbar(For Livelier CLI apps)
 - Hasing/Code generation tools:
   - UTK::Barcode(or QR-code generation)
   - UTK::Hash(For quick cryptography. NOT RECOMMENDED DATA SECURITY UNTIL SUFFICIENT TESTING)
@@ -66,4 +67,5 @@ cd utility-toolkit
 cmake -S . -B build
 cmake --build build
 ```
+
 
